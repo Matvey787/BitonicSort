@@ -5,7 +5,7 @@
 
 
 void prepareSequenceForBS(std::vector<int>& sequence);
-void showBitonicSort(std::vector<int>& sequence, const cl::Device& device, const std::string& kernelSource);
+void showBitonicSort(std::vector<int>& sequence, const cl::Device& device, const std::string& kernelSource, const size_t initial_size);
 void compare(std::vector<int>& sequence, const cl::Device& device, const std::string& kernelSource);
 
 int main(int argc, const char* argv[]) try 
@@ -76,6 +76,8 @@ int main(int argc, const char* argv[]) try
         sequence = bs::input_stdin<int>();
     }
 
+    size_t initial_size = sequence.size();
+
     std::string kernelSource = bs::readKernel("src/bitonicSort_gkernel.cl") + 
                                bs::readKernel("src/bitonicSort_lkernel.cl");
     
@@ -90,7 +92,7 @@ int main(int argc, const char* argv[]) try
             exit(0);
         }
 
-        showBitonicSort(sequence, device, kernelSource);
+        showBitonicSort(sequence, device, kernelSource, initial_size);
     }
     
 }
@@ -114,16 +116,20 @@ void prepareSequenceForBS(std::vector<int>& sequence)
             new_size <<= 1;
         }
 
-        sequence.resize(new_size, 0);
+        sequence.resize(new_size, std::numeric_limits<int>::max());
     }
 }
 
-void showBitonicSort(std::vector<int>& sequence, const cl::Device& device, const std::string& kernelSource)
+void showBitonicSort(std::vector<int>& sequence,
+                     const cl::Device& device, 
+                     const std::string& kernelSource, 
+                     const size_t initial_size)
 {
     bs::bitonicSort_modernized(sequence, device, kernelSource);
 
-    for (float v : sequence) std::cout << v << " ";
-        std::cout << std::endl;
+    for (size_t i = 0; i < initial_size; i++) std::cout << sequence[i] << " ";
+
+    std::cout << '\n';
 }
 
 void compare(std::vector<int>& sequence, const cl::Device& device, const std::string& kernelSource)

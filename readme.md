@@ -49,6 +49,7 @@ Usage:
 ./build/biton --file tests/e2e/test2.dat
 
 # Просто отсортировать числа из файла test2.dat (без сравнения с std::sort)
+# Явно указать устройство (платформа 1, устройство 0)
 ./build/biton -s 1:0 --file tests/e2e/test2.dat
 
 # Отсортировать числа из файла test2.dat и сравнить результат с std::sort

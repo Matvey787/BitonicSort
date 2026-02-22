@@ -4,10 +4,10 @@
 cmake -S . -B build
 cmake --build build
 # Запус битонической сортировки 
-./build/biton tests/test2.dat 
+OCL_ICD_VENDORS=nvidia.icd ./build/biton tests/test2.dat 
 
 # Запуск сравнения std::sort и моей bitonicSort
-./build/compare tests/test1.dat 
+OCL_ICD_VENDORS=nvidia.icd ./build/compare tests/test1.dat 
 ```
 
 ## Установка opencl

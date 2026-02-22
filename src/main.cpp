@@ -5,8 +5,10 @@
 int main(int argc, const char* argv[]) try 
 {
     std::unique_ptr<bs::IDeviceSearcher> searcher = bs::createDeviceSearcher();
+    
+    // searcher->showAllDevicesInfo();
 
-    cl::Device device = searcher->getDevice(1, 0);
+    cl::Device device = searcher->getFirstSuitableDevice();
 
     #ifdef DEBUG
     std::cout << "Selected device: \n";

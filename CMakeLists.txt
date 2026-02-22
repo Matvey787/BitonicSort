@@ -44,3 +44,5 @@ target_compile_definitions(compare
     PRIVATE
         COMPARE  
 )
+
+add_subdirectory(tests/tester/)

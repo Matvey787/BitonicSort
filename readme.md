@@ -45,6 +45,9 @@ Usage:
 Итак, запускаем сортировку:
 
 ```bash
+# Просто отсортировать числа из файла test2.dat (без сравнения с std::sort, с автоматическим выбором устройства)
+./build/biton --file tests/e2e/test2.dat
+
 # Просто отсортировать числа из файла test2.dat (без сравнения с std::sort)
 ./build/biton -s 1:0 --file tests/e2e/test2.dat
 

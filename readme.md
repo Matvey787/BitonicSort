@@ -33,7 +33,8 @@ Usage:
 ```
 
 Должно вывести что-то подобное:
-![devices](md_sources/devs.png)
+
+<img src="md_sources/devs.png" height="500">
 
 Здесь виден индекс каждого устройства и индекс его платформы.
 

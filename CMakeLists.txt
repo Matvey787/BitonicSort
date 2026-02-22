@@ -5,18 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # -------------------- Bitonic sort library --------------------
-set(BS_LIB bs)
-add_library(${BS_LIB} INTERFACE)  
 
-
-target_include_directories(${BS_LIB} 
-    INTERFACE 
-        ${CMAKE_CURRENT_SOURCE_DIR}/inc
-)
-
-
-
-
+add_subdirectory(bs_lib/)
+add_subdirectory(src/cxxopts/)
 
 add_executable(biton 
     src/main.cpp
@@ -24,25 +15,13 @@ add_executable(biton
 
 target_link_libraries(biton 
     PRIVATE
-        ${BS_LIB} 
+        bs_lib
         OpenCL
+        cxxopts
 )
 
-
-add_executable(compare 
-    src/main.cpp  
-)
-
-target_link_libraries(compare 
-    PRIVATE
-        ${BS_LIB}
-        OpenCL
-)
-
-
-target_compile_definitions(compare
-    PRIVATE
-        COMPARE  
-)
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(biton PRIVATE DEBUG)
+endif()
 
 add_subdirectory(tests/tester/)

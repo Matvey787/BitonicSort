@@ -1,31 +1,110 @@
 #include "bs.hpp"
 
 #include <chrono>
+#include <cxxopts.hpp>
+
+
+void prepareSequenceForBS(std::vector<int>& sequence);
+void showBitonicSort(std::vector<int>& sequence, const cl::Device& device, const std::string& kernelSource);
+void compare(std::vector<int>& sequence, const cl::Device& device, const std::string& kernelSource);
 
 int main(int argc, const char* argv[]) try 
 {
-    std::unique_ptr<bs::IDeviceSearcher> searcher = bs::createDeviceSearcher();
-    
-    // searcher->showAllDevicesInfo();
+    cxxopts::Options options("biton", "Bitonic sort using OpenCL");
+    options.add_options()
+        ("f,file", "Input file with numbers to sort", cxxopts::value<std::string>())
+        ("c,compare", "Compare with std::sort")
+        ("h,help", "Print usage")
+        ("dev", "Show selected OpenCL device")
+        ("shdevs", "Show all available OpenCL devices")
+        ("s,select", "Select device by platform and device index (format: <platformIdx>:<deviceIdx>)", cxxopts::value<std::string>()->default_value("auto"));
 
-    cl::Device device = searcher->getFirstSuitableDevice();
 
-    #ifdef DEBUG
-    std::cout << "Selected device: \n";
-    bs::printDeviceInfo(device);
-    #endif
+    auto result = options.parse(argc, argv);
+    if (result.count("help"))
+    {
+      std::cout << options.help() << std::endl;
+      exit(0);
+    }
 
     std::vector<int> sequence;
 
-    if (argc > 1)
+
+    if (result.count("file"))
     {
-        sequence = bs::input_fstream<int>(argv[1]);
+        sequence = bs::input_fstream<int>(result["file"].as<std::string>());
+    }
+
+
+    if (result.count("shdevs"))
+    {
+        auto searcher = bs::createDeviceSearcher();
+        searcher->showAllDevicesInfo();
+        exit(0);
+    }
+
+    auto searcher = bs::createDeviceSearcher();
+    cl::Device device;
+
+    if (result["select"].as<std::string>() != "auto")
+    {
+        auto selectStr = result["select"].as<std::string>();
+
+        auto colonPos = selectStr.find(':');
+
+        if (colonPos == std::string::npos)
+        {
+            throw std::runtime_error("Invalid format for --select. Expected <platformIdx>:<deviceIdx>");
+        }
+        size_t platformIdx = std::stoul(selectStr.substr(0, colonPos));
+        size_t deviceIdx = std::stoul(selectStr.substr(colonPos + 1));
+        device = searcher->getDevice(platformIdx, deviceIdx);
     }
     else
+    {
+        device = searcher->getFirstSuitableDevice();
+    }
+
+    if (result.count("dev"))
+    {
+        std::cout << "Selected device: " << device.getInfo<CL_DEVICE_NAME>() << std::endl;
+    }
+
+
+    if (not result.count("file"))
     {
         sequence = bs::input_stdin<int>();
     }
 
+    std::string kernelSource = bs::readKernel("src/bitonicSort_gkernel.cl") + 
+                               bs::readKernel("src/bitonicSort_lkernel.cl");
+    
+    if (!sequence.empty())
+    {
+        prepareSequenceForBS(sequence);
+        
+        if(result.count("compare"))
+        {
+            std::vector<int> duplicate = sequence;
+            compare(duplicate, device, kernelSource);
+            exit(0);
+        }
+
+        showBitonicSort(sequence, device, kernelSource);
+    }
+    
+}
+catch (const std::exception& e)
+{
+    std::cout << "Error: " << e.what() << std::endl;
+}
+catch (...)
+{
+    std::cout << "Unknown problems occurred\n";
+}
+
+void prepareSequenceForBS(std::vector<int>& sequence)
+{
     size_t sequence_size = sequence.size();
 
     if ((sequence_size > 0) && !((sequence_size & (sequence_size - 1)) == 0))
@@ -35,33 +114,22 @@ int main(int argc, const char* argv[]) try
             new_size <<= 1;
         }
 
-        sequence.resize(new_size);
+        sequence.resize(new_size, 0);
     }
+}
 
-
-    std::string kernelSource = bs::readKernel("src/bitonicSort_gkernel.cl") + 
-                               bs::readKernel("src/bitonicSort_lkernel.cl");
-    #ifdef DEBUG
-    std::cout << kernelSource << '\n';
-    #endif
-
-
-    #ifdef COMPARE
-    std::vector<int> sequence2 = sequence;
-    #endif
-
-    // auto start1 = std::chrono::high_resolution_clock::now();
-    // bs::bitonicSort(sequence, device, kernelSource);
-    // auto end1 = std::chrono::high_resolution_clock::now();
-
-    #if !defined(COMPARE) && !defined(DEBUG)
+void showBitonicSort(std::vector<int>& sequence, const cl::Device& device, const std::string& kernelSource)
+{
     bs::bitonicSort_modernized(sequence, device, kernelSource);
 
     for (float v : sequence) std::cout << v << " ";
         std::cout << std::endl;
-    #endif
+}
 
-    #ifdef COMPARE
+void compare(std::vector<int>& sequence, const cl::Device& device, const std::string& kernelSource)
+{
+    std::vector<int> sequence2 = sequence;
+
     auto start1 = std::chrono::high_resolution_clock::now();
     bs::bitonicSort_modernized(sequence, device, kernelSource);
     auto end1 = std::chrono::high_resolution_clock::now();
@@ -75,14 +143,4 @@ int main(int argc, const char* argv[]) try
 
     std::cout << "Bitonic sort: " << diff1.count() << " s\n";
     std::cout << "std::sort: " << diff2.count() << " s\n";
-    #endif
 }
-catch (const std::exception& e)
-{
-    std::cout << "Error: " << e.what() << std::endl;
-}
-catch (...)
-{
-    std::cout << "Unknown problems occurred\n";
-}
-

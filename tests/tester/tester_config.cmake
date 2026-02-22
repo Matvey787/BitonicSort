@@ -11,10 +11,10 @@ set(CTEST_PREFIX         "...")
 set(CTEST_TIMEOUT        30)
 
 # Gtest
-set(GTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../gtest")
-set(GTEST_OUTPUT_EXEC_FILE_NAME "geo_tests")
-set(GTEST_ADDITIONAL_LIBS_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/../../../geo_lib")
-set(GTEST_ADDITIONAL_LIBS_NAMES "bvh_lib" "geo_lib")
+set(GTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../unit")
+set(GTEST_OUTPUT_EXEC_FILE_NAME "unit_tests")
+set(GTEST_ADDITIONAL_LIBS_PATHS "")
+set(GTEST_ADDITIONAL_LIBS_NAMES "bs_lib" "OpenCL")
 
 
 

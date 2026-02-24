@@ -1,5 +1,11 @@
 #include "bs.hpp"
 
+#include <iostream>
+#include <fstream>
+#include <stdexcept>
+#include <vector>
+#include <string>
+
 #include <chrono>
 #include <cxxopts.hpp>
 

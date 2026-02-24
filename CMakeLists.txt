@@ -6,7 +6,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # -------------------- Bitonic sort library --------------------
 
+find_package(OpenCL REQUIRED)
+
 add_subdirectory(bs_lib/)
+
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/cxxopts/include/cxxopts.hpp")
+    message(FATAL_ERROR 
+        " The cxxopts submodule is missing! \n"
+        "Please run the following commands to fetch it:\n"
+        "  git submodule update --init --recursive\n"
+        "----------------------------------------")
+endif()
+
 add_subdirectory(src/cxxopts/)
 
 add_executable(biton 

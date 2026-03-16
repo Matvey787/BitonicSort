@@ -3,7 +3,7 @@
 ```bash
 git clone --recurse-submodules https://github.com/Matvey787/BitonicSort.git
 
-cmake -S . -B build
+cmake -S . -B build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -G=Ninja
 
 cmake --build build
 ```

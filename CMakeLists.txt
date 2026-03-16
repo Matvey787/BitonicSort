@@ -1,8 +1,14 @@
-cmake_minimum_required(VERSION 3.11)
-project(BitonicSort CXX)
+cmake_minimum_required(VERSION 3.28)
+
+project(BitonicSort 
+        VERSION 1.0.0 
+        LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+include(cmake/debug_release.cmake)
+
 
 # -------------------- Bitonic sort library --------------------
 
@@ -12,10 +18,9 @@ add_subdirectory(bs_lib/)
 
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/cxxopts/include/cxxopts.hpp")
     message(FATAL_ERROR 
-        " The cxxopts submodule is missing! \n"
+        "The cxxopts submodule is missing! \n"
         "Please run the following commands to fetch it:\n"
-        "  git submodule update --init --recursive\n"
-        "----------------------------------------")
+        "   git submodule update --init --recursive\n")
 endif()
 
 add_subdirectory(src/cxxopts/)

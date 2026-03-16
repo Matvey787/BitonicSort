@@ -77,3 +77,17 @@ sudo apt install pocl-opencl-icd
 ```
 
 ls /etc/OpenCL/vendors/ - находим какие устройства видны и поддерживаются opencl
+
+## Рвботаем с docker
+
+```bash
+
+docker build -f Dockerfile.linux -t biton:linux . # Создание образа
+
+docker create --name biton-tmp biton:linux   # Создаем заготовку контейнера из образа
+docker cp biton-tmp:/src/build/biton ./biton # Копируем из контейнера бинарник
+docker rm biton-tmp # Удаляем контейнер за ненадобностью
+
+docker ps -a # Посмотреть весь список доступных контейнеров
+
+```

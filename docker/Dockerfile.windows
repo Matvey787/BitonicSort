@@ -1,0 +1,32 @@
+FROM ubuntu:25.10
+
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends \
+        cmake ninja-build mingw-w64 \
+        clang-21 clang-tools-21 opencl-headers unzip\
+    && ln -s /usr/bin/clang++-21 /usr/bin/clang++ \
+    && ln -s /usr/bin/clang-21   /usr/bin/clang   \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY vendor/OpenCL-SDK-Win-x64.zip /tmp/ocl.zip
+
+RUN unzip /tmp/ocl.zip -d /tmp/ocl
+
+RUN cp /tmp/ocl/OpenCL-SDK-v2025.07.23-Win-x64/lib/OpenCL.lib \
+        /usr/x86_64-w64-mingw32/lib/libOpenCL.a && \
+    cp /tmp/ocl/OpenCL-SDK-v2025.07.23-Win-x64/bin/OpenCL.dll \
+        /usr/x86_64-w64-mingw32/lib/ && \
+    cp -r /tmp/ocl/OpenCL-SDK-v2025.07.23-Win-x64/include/CL \
+        /usr/x86_64-w64-mingw32/include/ && \
+    rm -rf /tmp/ocl /tmp/ocl.zip
+
+WORKDIR /src
+COPY . .
+RUN rm -rf build-win/
+
+RUN cmake -B build-win \
+          -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-windows.cmake \
+          -DCMAKE_BUILD_TYPE=Release \
+          -G Ninja
+
+RUN cmake --build build-win

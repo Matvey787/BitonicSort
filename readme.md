@@ -55,7 +55,7 @@ Usage:
 # Отсортировать числа из файла test2.dat и сравнить результат с std::sort
 ./build/biton -s 1:0 --file tests/e2e/test2.dat --compare
 
-# Жесткий запуск с поставщиком только от nvidia
+# Запуск с поставщиком только от nvidia
 OCL_ICD_VENDORS=nvidia.icd ./build/biton --file tests/e2e/test2.dat --compare
 
 ```

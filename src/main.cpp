@@ -1,3 +1,5 @@
+import commandLineHandler;
+
 #include "bs.hpp"
 
 #include <iostream>
@@ -5,56 +7,36 @@
 #include <stdexcept>
 #include <vector>
 #include <string>
-
 #include <chrono>
-#include <cxxopts.hpp>
-
 
 void prepareSequenceForBS(std::vector<int>& sequence);
 void showBitonicSort(std::vector<int>& sequence, const cl::Device& device, const std::string& kernelSource, const size_t initial_size);
 void compare(std::vector<int>& sequence, const cl::Device& device, const std::string& kernelSource);
 
-int main(int argc, const char* argv[]) try 
+int main(int argc, const char* argv[]) try
 {
-    cxxopts::Options options("biton", "Bitonic sort using OpenCL");
-    options.add_options()
-        ("f,file", "Input file with numbers to sort", cxxopts::value<std::string>())
-        ("c,compare", "Compare with std::sort")
-        ("h,help", "Print usage")
-        ("dev", "Show selected OpenCL device")
-        ("shdevs", "Show all available OpenCL devices")
-        ("s,select", "Select device by platform and device index (format: <platformIdx>:<deviceIdx>)", cxxopts::value<std::string>()->default_value("auto"));
-
-
-    auto result = options.parse(argc, argv);
-    if (result.count("help"))
-    {
-      std::cout << options.help() << std::endl;
-      exit(0);
-    }
+    auto options = clh::parseCommandLine(argc, argv);
 
     std::vector<int> sequence;
 
-
-    if (result.count("file"))
+    if (!options.inputFile.empty())
     {
-        sequence = bs::input_fstream<int>(result["file"].as<std::string>());
+        sequence = bs::input_fstream<int>(options.inputFile);
     }
 
-
-    if (result.count("shdevs"))
+    if (options.showAllDevices)
     {
         auto searcher = bs::createDeviceSearcher();
         searcher->showAllDevicesInfo();
-        exit(0);
+        return 0;
     }
 
     auto searcher = bs::createDeviceSearcher();
     cl::Device device;
 
-    if (result["select"].as<std::string>() != "auto")
+    if (options.selectDevice != "auto")
     {
-        auto selectStr = result["select"].as<std::string>();
+        auto selectStr = options.selectDevice;
 
         auto colonPos = selectStr.find(':');
 
@@ -71,44 +53,46 @@ int main(int argc, const char* argv[]) try
         device = searcher->getFirstSuitableDevice();
     }
 
-    if (result.count("dev"))
+    if (options.showDevice)
     {
         std::cout << "Selected device: " << device.getInfo<CL_DEVICE_NAME>() << std::endl;
     }
 
-
-    if (not result.count("file"))
+    if (options.inputFile.empty())
     {
         sequence = bs::input_stdin<int>();
     }
 
     size_t initial_size = sequence.size();
 
-    std::string kernelSource = bs::readKernel("src/bitonicSort_gkernel.cl") + 
+    std::string kernelSource = bs::readKernel("src/bitonicSort_gkernel.cl") +
                                bs::readKernel("src/bitonicSort_lkernel.cl");
-    
+
     if (!sequence.empty())
     {
         prepareSequenceForBS(sequence);
-        
-        if(result.count("compare"))
+
+        if (options.compare)
         {
             std::vector<int> duplicate = sequence;
             compare(duplicate, device, kernelSource);
-            exit(0);
+            return 0;
         }
 
         showBitonicSort(sequence, device, kernelSource, initial_size);
     }
-    
+
+    return 0;
 }
 catch (const std::exception& e)
 {
     std::cout << "Error: " << e.what() << std::endl;
+    return 1;
 }
 catch (...)
 {
     std::cout << "Unknown problems occurred\n";
+    return 1;
 }
 
 void prepareSequenceForBS(std::vector<int>& sequence)
@@ -127,8 +111,8 @@ void prepareSequenceForBS(std::vector<int>& sequence)
 }
 
 void showBitonicSort(std::vector<int>& sequence,
-                     const cl::Device& device, 
-                     const std::string& kernelSource, 
+                     const cl::Device& device,
+                     const std::string& kernelSource,
                      const size_t initial_size)
 {
     bs::bitonicSort_modernized(sequence, device, kernelSource);

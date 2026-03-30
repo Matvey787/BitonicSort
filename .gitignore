@@ -2,3 +2,4 @@
 build/
 CMakeFiles/
 test1.dat
+*.profraw

@@ -3,15 +3,23 @@
 # CTest setting
 
 set(CTEST_PROGRAM_EXEC   "${CMAKE_CURRENT_SOURCE_DIR}/../../build/biton")
+
 set(CTEST_INPUTS_DIR     "${CMAKE_CURRENT_SOURCE_DIR}/../e2e")
+
 set(CTEST_ANSWERS_DIR    "${CMAKE_CURRENT_SOURCE_DIR}/../e2e")
+
 set(CTEST_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+
 set(CTEST_ADDITIONAL_OPTIONS "--select=1:0 --file=")
+
 set(CTEST_INPUT_FILE_TRANSMISSION_TYPE "f")
 
 set(CTEST_INPUT_PATTERN  "dat")
+
 set(CTEST_ANSWER_PATTERN "ans")
+
 set(CTEST_PREFIX         "...")
+
 set(CTEST_TIMEOUT        30)
 
 
@@ -25,7 +33,9 @@ set(CTEST_TIMEOUT        30)
 # Gtest setting
 
 set(GTEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../unit")
+
 set(GTEST_OUTPUT_EXEC_FILE_NAME "unit_tests")
+
 set(GTEST_ADDITIONAL_LIBS_NAMES "bs_lib" "OpenCL")
 
 set(LLVMCOV TRUE)

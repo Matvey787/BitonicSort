@@ -16,6 +16,9 @@ function (create_tests)
                         "${CTEST_PROGRAM_EXEC}"
                         "${test_input}"
                         "${test_answer}"
+                        "${CTEST_INPUT_FILE_TRANSMISSION_TYPE}"
+                        "${CTEST_ADDITIONAL_OPTIONS}"
+                WORKING_DIRECTORY ${CTEST_WORKING_DIRECTORY}
             )
             set_tests_properties("${test_name}" PROPERTIES
                     TIMEOUT "${CTEST_TIMEOUT}"
@@ -33,8 +36,11 @@ if(TEST_INPUTS)
         "Tests founded in ${CTEST_INPUTS_DIR}, creating tests..."
     )
     create_tests()
-    print_colored_message("CTests generated succesfully, run it by command: \"ctest --test-dir build${TESTER_RELATIVE_PATH} -V\"" 
-        ${Color_Bright_Green} ${Bg_Default}
+    print_colored_message(
+        "CTests generated succesfully.\nBuild executable, then run ctests by command: \"ctest --test-dir build${TESTER_RELATIVE_PATH} -V\"" 
+        ${STATUS_COLOR_MESSAGE} 
+        ""
+        STATUS
     )
 else()
     message(WARNING

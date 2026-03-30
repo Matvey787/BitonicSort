@@ -39,11 +39,52 @@ set(Bg_Bright_White   "${Esc}[107m")
 
 set(Bg_Default   "${Esc}[49m")
 
-function(print_colored_message message font_color background_color)
-    if (background_color)
-        message("${font_color}${background_color}${message}${Color_Reset}")
+function(check_color_format color color_is_corect)
+    if ("${color}" MATCHES "^${Esc}\\[[0-9;]+m$")
+        set(${color_is_corect} TRUE PARENT_SCOPE)
     else()
-        message("${font_color}${message}${Color_Reset}")
+        set(${color_is_corect} FALSE PARENT_SCOPE)
+        message(WARNING "Color ${color} is not ANSII formated: 27[[0-9;]+m")
     endif()
+endfunction()
+
+function(print_colored_message message font_color background_color type)
+    set(font_color_is_correct FALSE)
+    set(background_color_is_correct FALSE)
+
+    if (NOT "${font_color}" STREQUAL "")
+        check_color_format(${font_color} font_color_is_correct)
+    endif()
+
+    if (NOT "${background_color}" STREQUAL "")
+        check_color_format(${background_color} background_color_is_correct)
+    endif()
+    
+    set(message_body "")
+
+    if (font_color_is_correct AND background_color_is_correct)
+        set(message_body "${font_color}${background_color}${message}")
+    endif()
+
+    if (font_color_is_correct AND NOT message_body)
+        set(message_body "${font_color}${message}")
+    endif()
+
+    if (background_color_is_correct AND NOT message_body)
+        set(message_body "${background_color}${message}")
+    endif()
+
+    if (NOT message_body)
+        set(message_body "${message}")
+    endif()
+
+    set(message_body "${message_body}${Color_Reset}")
+
+    if ("${type}" STREQUAL "")
+        message(${type} "${message_body}")
+    else()
+        message("${message_body}")
+    endif()
+    
 endfunction()
 

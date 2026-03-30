@@ -2,6 +2,10 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type" FORCE)
 endif()
 
+if(NOT SANITIZER)
+    option(SANITIZER "Enable sanitizer options" OFF)
+endif()
+
 
 
 
@@ -49,9 +53,6 @@ function(add_compiler_debug_options)
             -fno-omit-frame-pointer
             -fno-optimize-sibling-calls
 
-            -fsanitize=address
-            -fsanitize=undefined
-
             -Wshadow
             -Wconversion
             -Wsign-conversion
@@ -66,8 +67,7 @@ function(add_compiler_debug_options)
 
         add_compile_options(
             /Od  
-            /Zi  
-            /RTC1
+            /Zi
             /sdl 
             /GS  
             /MDd 
@@ -83,9 +83,32 @@ endfunction()
 
 
 
+function(add_compiler_sanitizer_options)
+     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+
+        add_compile_options(
+            -fsanitize=address
+            -fsanitize=undefined
+        )
+
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+
+        add_compile_options(
+            /RTC1
+        )
+    else()
+
+        message(STATUS "No compile sanitezer options for compiler: ${CMAKE_CXX_COMPILER_ID}")
+
+    endif()
+endfunction()
+
+
+
+
 # Function adds debug linker option (sanitizer)
 # (support GNU, Clang and MSVC)
-function(add_linker_debug_options)
+function(add_linker_sanitizer_options)
 
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 
@@ -131,8 +154,12 @@ add_compiler_warnings()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compiler_debug_options()
-    add_linker_debug_options()
     add_compile_definitions(DEBUG)
+
+    if(SANITIZER)
+        add_compiler_sanitizer_options()
+        add_linker_sanitizer_options()
+    endif()
 
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     add_compiler_release_options()

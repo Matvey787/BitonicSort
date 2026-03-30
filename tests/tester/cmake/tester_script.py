@@ -5,24 +5,39 @@ def color_text(text, color_code):
     return f"\033[{color_code}m{text}\033[0m"
 
 def main():
-    if len(sys.argv) != 4:
+    if len(sys.argv) < 5:
         print("Error: need 3 arguments")
-        print("Usage: python tester.py <executable> <input_file> <expected_output_file>")
+        print("Usage: python tester.py <executable> <input_file> <expected_output_file> <input_stream_type> [additional_command_line_input_args]")
         return 1
 
-    executable, input_file, expected_file = sys.argv[1:4]
+    executable, input_file, expected_file, input_stream_type, additional_args = sys.argv[1:6]
+
+    if input_stream_type != "fd" and input_stream_type != "f":
+        print("fd – reads the file as data and passes it on as an istream to the executable file\n\
+                f – the file is passed to the executable programme as its arguments")
+        return 1
     
     try:
         with open(expected_file, 'r') as f:
             expected_numbers = f.read().strip().split()
         
-        with open(input_file, 'r') as f:
+        if input_stream_type == "fd":
+            with open(input_file, 'r') as f:
+                result = subprocess.run(
+                    [executable + additional_args], 
+                    stdin=f, 
+                    capture_output=True, 
+                    text=True,
+                    timeout=30
+                )
+        elif input_stream_type == "f":
+            full_command = f"{executable} {additional_args}{input_file}"
+            print("Python run: " + full_command)
             result = subprocess.run(
-                [executable], 
-                stdin=f, 
-                capture_output=True, 
-                text=True,
-                timeout=30
+                full_command, 
+                shell=True,
+                capture_output=True,
+                text=True
             )
         
         actual_numbers = result.stdout.strip().split()
